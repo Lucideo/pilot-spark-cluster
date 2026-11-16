@@ -1,0 +1,16 @@
+FROM spark:4.1.2-java21-python3
+
+USER root
+
+RUN pip install --no-cache-dir jupyterlab pyspark==4.1.2
+
+RUN mkdir /home/spark \
+&& chown -R spark /home/spark
+
+ENV HOME=/home/spark
+
+USER spark	
+
+WORKDIR /home/spark/notebooks
+
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser"]

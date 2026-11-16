@@ -1,0 +1,71 @@
+x-spark-conf: &spark-conf
+  profiles: [spark-cluster]
+  image: spark:4.1.2-java21-python3
+  networks: [spark-cluster-net]
+  volumes:
+    - ./data:/home/spark/data
+    - ./conf:/opt/spark/conf
+    - ./events:/tmp/spark-events
+
+services:
+  spark-master:
+    <<: *spark-conf
+    container_name: spark-master
+    hostname: spark-master
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+      --host spark-master --port 7077 --webui-port 8080
+    ports: ["8080:8080", "7077:7077"]
+
+  spark-worker-1:
+    <<: *spark-conf
+    container_name: spark-worker-1
+    hostname: spark-worker-1
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
+      spark://spark-master:7077 --cores 4 --memory 4g --webui-port 8081
+    ports: ["8081:8081"]
+    depends_on:
+      - spark-master
+
+  spark-worker-2:
+    <<: *spark-conf
+    container_name: spark-worker-2
+    hostname: spark-worker-2
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
+      spark://spark-master:7077 --cores 4 --memory 4g --webui-port 8081
+    ports: ["8082:8081"]
+    depends_on:
+      - spark-master
+
+  spark-history:
+    <<: *spark-conf
+    container_name: spark-history
+    hostname: spark-history
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
+    ports: ["18080:18080"]
+
+  jupyter:
+    <<: *spark-conf
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    image: spark-jupyter:local
+    container_name: jupyter
+    hostname: jupyter
+    volumes:
+      - ./data:/home/spark/data
+      - ./conf:/opt/spark/conf
+      - ./events:/tmp/spark-events
+      - ./notebooks:/home/spark/notebooks
+    ports: ["8888:8888", "4040:4040"]
+    depends_on:
+      - spark-master
+      - spark-worker-1
+      - spark-worker-2
+
+networks:
+  spark-cluster-net:
+    name: spark-cluster-net
