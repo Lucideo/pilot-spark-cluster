@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Datasets (~900 MB, too large for git) and Spark output
+data/
+notebooks/home/
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Spark history server event logs
+events/
+
+# Local env / secrets
+.env
