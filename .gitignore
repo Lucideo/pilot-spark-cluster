@@ -12,7 +12,6 @@ venv/
 
 # Datasets (~900 MB, too large for git) and Spark output
 data/
-notebooks/home/
 spark-warehouse/
 metastore_db/
 derby.log
